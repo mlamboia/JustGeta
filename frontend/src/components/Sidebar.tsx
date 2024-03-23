@@ -29,10 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const handleCollectionClick = (collection: Collection) => {
     var selectedCollectionRequest = selectedCollection as CollectionRequest;
 
-    if (
-      !selectedCollectionRequest?.collectionId &&
-      selectedCollectionRequest?.id == collection.id
-    ) {
+    if (selectedCollectionRequest?.id == collection.id) {
       collection.isOpen = true;
       setSelectedCollection(() => null);
     } else if (selectedCollectionRequest?.collectionId == collection.id) {
@@ -52,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <div className="w-64 p-2 px-4">
+    <div className="w-80 p-2 px-4 flex flex-col h-screen">
       <div className="flex rounded-lg shadow-sm mt-3 mb-2">
         <button
           className="border-e-0 rounded-s-md w-full bg-green-700 text-center border border-green-700 hover:border-green-800 hover:bg-green-800 px-6 py-2 shadow leading-tight focus:outline-none focus:shadow-outline"
@@ -65,15 +62,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <NewImportButton dispatch={dispatch} />
       </div>
 
-      <div className="flex rounded-lg shadow-sm mt-3 mb-2">
-        <input
-          className="rounded-md w-full appearance-none bg-stone-600 text-white border border-stone-700 hover:border-stone-600 px-4 py-2 pr-8 shadow leading-tight focus:outline-none focus:shadow-outline"
-          type="text"
-          placeholder="Name"
-        />
-      </div>
-
-      <div className="text-start">
+      <div className="flex-1 text-start h-100 overflow-auto mb-10 pr-2">
         {collections.map((collection) => (
           <React.Fragment key={collection.id}>
             <div

@@ -24,7 +24,7 @@ const NewImportButton: React.FC<NewImportButtonProps> = ({ dispatch }) => {
       })) || [];
 
     let collection: Collection = {
-      id: Date.now(),
+      id: Date.now() - 1,
       title: content?.info.name || "",
       variables: collectionVariables,
       children: [],

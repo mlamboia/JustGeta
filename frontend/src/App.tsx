@@ -50,7 +50,7 @@ const App: React.FC = () => {
         Just Geta 🏠
       </nav>
 
-      <div className="grid grid-cols-[15rem_minmax(100px,_1fr)] gap-4">
+      <div className="grid grid-cols-[20rem_minmax(100px,_1fr)] gap-4">
         <div className="col-auto">
           <Sidebar
             collections={collections}
