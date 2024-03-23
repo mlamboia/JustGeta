@@ -2,11 +2,17 @@ import React, { useState, useEffect } from "react";
 import AttachmentComplexForm from "./AttachmentComplexForm";
 import useSaveShortcut from "../hooks/useSaveShortcut";
 import parseFileToBinary from "../utils/parseFileToBinary";
+import parseToRequest from "../utils/parseToRequest";
+import parseToCurl from "../utils/parseToCurl";
+
+import { ToastContainer, toast, TypeOptions } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface RequestFormProps {
   onSendRequest: (requestData: RequestData) => void;
   dispatch: React.Dispatch<CollectionAction>;
   request: CollectionRequest;
+  collection: Collection | undefined;
   setSelectedCollection: React.Dispatch<
     React.SetStateAction<Collection | CollectionRequest | null>
   >;
@@ -15,6 +21,7 @@ interface RequestFormProps {
 const RequestForm: React.FC<RequestFormProps> = ({
   request,
   setSelectedCollection,
+  collection,
   dispatch,
   onSendRequest,
 }) => {
@@ -37,6 +44,9 @@ const RequestForm: React.FC<RequestFormProps> = ({
     setcontentType(1);
     setAttachments(request.attachments || []);
   }, [request]);
+
+  const notify = (message: String, type: TypeOptions) =>
+    toast(message, { type });
 
   const setAttachment = async (
     id: number | null,
@@ -127,8 +137,34 @@ const RequestForm: React.FC<RequestFormProps> = ({
     setSelectedCollection(null);
   };
 
+  const handleCopyCurl = async function () {
+    const request: RequestData = {
+      url,
+      method,
+      headers,
+      body,
+      attachments,
+    };
+
+    try {
+      if (!collection) throw "Collection not found";
+      const parsedRequest = parseToRequest(request, collection);
+      const curl = parseToCurl(parsedRequest);
+
+      await navigator.clipboard.writeText(curl);
+
+      notify("Curl copied!", "success");
+    } catch (error) {
+      if (error instanceof Error) return notify(error.message, "error");
+
+      notify(error as String, "error");
+    }
+  };
+
   return (
     <div className="pt-2 px-4">
+      <ToastContainer theme="dark" autoClose={5000} />
+
       <div className="flex gap-2 mb-8 mt-3">
         <input
           className="w-full appearance-none bg-stone-600 text-white border border-stone-700 hover:border-stone-600 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline mb-2"
@@ -181,6 +217,14 @@ const RequestForm: React.FC<RequestFormProps> = ({
           onClick={handleSendRequest}
         >
           Send
+        </button>
+
+        <button
+          className="bg-emerald-600 text-center border border-emerald-600 hover:border-emerald-700 hover:bg-emerald-700 px-6 py-2 rounded shadow leading-tight focus:outline-none focus:shadow-outline mb-2"
+          type="button"
+          onClick={handleCopyCurl}
+        >
+          Curl
         </button>
       </div>
 

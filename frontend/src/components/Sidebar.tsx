@@ -16,8 +16,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   selectedCollection,
   setSelectedCollection,
 }) => {
-  const [clickCount, setClickCount] = useState(1);
-
   const handleNewCollection = () => {
     const collection: Collection = {
       id: Date.now(),
@@ -29,28 +27,20 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const handleCollectionClick = (collection: Collection) => {
-    setClickCount((prevCount) => prevCount + 1);
+    var selectedCollectionRequest = selectedCollection as CollectionRequest;
 
-    setTimeout(() => {
-      if (clickCount != 1) return;
-      setClickCount(1);
-
-      if (selectedCollection?.id == collection.id) return;
-
-      var selectedCollectionRequest = selectedCollection as CollectionRequest;
-      if (selectedCollectionRequest?.collectionId == collection.id) return;
-
-      dispatch({ type: "TOGGLE_COLLECTION", collection });
-    }, 200);
-  };
-
-  const handleDoubleClick = (collection: Collection) => {
-    setClickCount(1);
-    collection.isOpen = true;
-
-    setSelectedCollection((prevSelectedCollection) =>
-      prevSelectedCollection?.id === collection.id ? null : collection,
-    );
+    if (
+      !selectedCollectionRequest?.collectionId &&
+      selectedCollectionRequest?.id == collection.id
+    ) {
+      collection.isOpen = true;
+      setSelectedCollection(() => null);
+    } else if (selectedCollectionRequest?.collectionId == collection.id) {
+      setSelectedCollection(() => collection);
+      return;
+    } else {
+      setSelectedCollection(() => collection);
+    }
 
     dispatch({ type: "TOGGLE_COLLECTION", collection });
   };
@@ -87,13 +77,16 @@ const Sidebar: React.FC<SidebarProps> = ({
         {collections.map((collection) => (
           <React.Fragment key={collection.id}>
             <div
-              className={`truncate cursor-pointer select-none rounded p-2 mt-1 ${selectedCollection?.id == collection.id || collection?.isOpen ? "bg-stone-800" : ""}`}
+              className={`truncate cursor-pointer select-none rounded p-2 mt-1 ${[selectedCollection?.id, (selectedCollection as CollectionRequest)?.collectionId].includes(collection.id) || collection?.isOpen ? "bg-stone-800" : ""}`}
               onClick={() => handleCollectionClick(collection)}
-              onDoubleClick={() => handleDoubleClick(collection)}
             >
               {collection.title}
             </div>
-            {(selectedCollection?.id == collection.id || collection?.isOpen) &&
+            {([
+              selectedCollection?.id,
+              (selectedCollection as CollectionRequest)?.collectionId,
+            ].includes(collection.id) ||
+              collection?.isOpen) &&
               collection.children && (
                 <div>
                   {collection.children.map((childcollection) => (

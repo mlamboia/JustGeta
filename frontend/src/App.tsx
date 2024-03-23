@@ -7,6 +7,7 @@ import RequestForm from "./components/RequestForm";
 import { collectionReducer } from "./reducers/collectionReducer";
 import ResponseViewer from "./components/ResponseViewer";
 import Sidebar from "./components/Sidebar";
+import parseToRequest from "./utils/parseToRequest";
 
 const App: React.FC = () => {
   const [response, setResponse] = useState<any | null>(null);
@@ -25,18 +26,6 @@ const App: React.FC = () => {
 
   const handleRequest = async (request: RequestData) => {
     try {
-      try {
-        if (request.headers) JSON.parse(request.headers);
-      } catch (e) {
-        throw "Header is not a valid JSON";
-      }
-
-      try {
-        if (request.body) JSON.parse(request.body);
-      } catch (e) {
-        throw "Body is not a valid JSON";
-      }
-
       if (!selectedCollection) throw "Selected collection not found";
 
       const thisRequest = selectedCollection as CollectionRequest;
@@ -45,23 +34,10 @@ const App: React.FC = () => {
       );
 
       if (!collection) throw "Collection not found";
-      collection.variables?.forEach((variable) => {
-        if (request.body) {
-          request.body = request.body.replace(
-            new RegExp(`{{${variable.name}}}`, "g"),
-            variable.value.toString(),
-          );
-        }
+      const parsedRequest = parseToRequest(request, collection);
 
-        if (request.headers) {
-          request.headers = request.headers.replace(
-            new RegExp(`{{${variable.name}}}`, "g"),
-            variable.value.toString(),
-          );
-        }
-      });
+      const data = await MakeRequest(parsedRequest);
 
-      const data = await MakeRequest(request);
       setResponse(data);
     } catch (error) {
       setResponse(error);
@@ -95,6 +71,9 @@ const App: React.FC = () => {
               <div>
                 <RequestForm
                   request={selectedCollection as CollectionRequest}
+                  collection={collections.find(
+                    (c) => c.id == selectedCollection.collectionId,
+                  )}
                   setSelectedCollection={setSelectedCollection}
                   dispatch={dispatch}
                   onSendRequest={handleRequest}
